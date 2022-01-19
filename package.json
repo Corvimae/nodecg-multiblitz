@@ -1,0 +1,40 @@
+{
+  "name": "nodecg-multiblitz",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Corvimae/nodecg-multiblitz"
+  },
+  "author": "zoton2",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Corvimae/nodecg-multiblitz/issues"
+  },
+  "homepage": "https://github.com/Corvimae/nodecg-multiblitz#readme",
+  "nodecg": {
+    "compatibleRange": "^1.5.0",
+    "bundleDependencies": {
+      "nodecg-speedcontrol": "^2.0.0"
+    },
+    "graphics": [
+      {
+        "file": "timer.html",
+        "width": 1920,
+        "height": 1080
+      },
+      {
+        "file": "cumulative.html",
+        "width": 1920,
+        "height": 1080
+      }
+    ],
+    "dashboardPanels": [
+      {
+        "name": "multiblitz",
+        "title": "Multiblitz Timers",
+        "file": "multiblitz.html",
+        "width": 3
+      }
+    ]
+  }
+}
