@@ -6,6 +6,10 @@ const RUN_DATA_TEMPLATE = {
   currentRunStart: null,
 };
 
+function log(message) {
+  console.info(`[${NODECG_BUNDLE}] ${message.toString()}`);
+}
+
 module.exports = nodecg => {
   const router = nodecg.Router();
   const runnerData = nodecg.Replicant('runnerData', NODECG_BUNDLE, { defaultValue: {} });
@@ -15,10 +19,11 @@ module.exports = nodecg => {
 
     const runner = runnerData.value[key] ?? RUN_DATA_TEMPLATE;
 
-    console.log('Start requested', req.query);
+    log(`Timer start requested by ${req.query.key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'})`);
 
     if (runner.isRunning) {
       res.status(400).send('Run is already started.');
+      log(`Timer start request ignored: ${req.query.key ?? '<undefined user>'} is already on a run.`);
 
       return;
     }
@@ -40,16 +45,18 @@ module.exports = nodecg => {
 
     const runner = runnerData.value[key];
 
-    console.log('Stop requested', req.query);
+    log(`Timer stop requested by ${req.query.key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'})`);
 
     if (!runner) {
       res.status(400).send('Runner key is not registered.');
+      log(`Timer stop request ignored: ${req.query.key ?? '<undefined user>'} is not registered as a runner.`);
 
       return;
     }
 
     if (!runner.isRunning || !runner.currentRunStart) {
       res.status(400).send('Run is already stopped.');
+      log(`Timer stop request ignored: ${req.query.key ?? '<undefined user>'} is not currently on a run.`);
 
       return;
     }
