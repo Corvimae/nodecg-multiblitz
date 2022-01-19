@@ -25,9 +25,10 @@ module.exports = nodecg => {
       return;
     }
 
-    const runner = runnerData.value[key] ?? RUN_DATA_TEMPLATE;
-
-    log(`Timer start requested by ${req.query.key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'})`);
+    const runner = runnerData.value[key] ?? {
+      ...RUN_DATA_TEMPLATE,
+      segments: [],
+    };
 
     if (runner.isRunning) {
       res.status(400).send('Run is already started.');
@@ -35,6 +36,8 @@ module.exports = nodecg => {
 
       return;
     }
+
+    log(`Timer started by ${req.query.key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'})`);
 
     runner.isRunning = true;
     runner.currentRunStart = Number(req.query.time);
@@ -61,8 +64,6 @@ module.exports = nodecg => {
 
     const runner = runnerData.value[key];
 
-    log(`Timer stop requested by ${req.query.key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'})`);
-
     if (!runner) {
       res.status(400).send('Runner key is not registered.');
       log(`Timer stop request ignored: ${req.query.key ?? '<undefined user>'} is not registered as a runner.`);
@@ -76,6 +77,8 @@ module.exports = nodecg => {
 
       return;
     }
+
+    log(`Timer stopped by ${req.query.key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'})`);
 
     runner.isRunning = false;
     
