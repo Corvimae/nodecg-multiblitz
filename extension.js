@@ -16,7 +16,14 @@ module.exports = nodecg => {
   const runnerData = nodecg.Replicant('runnerData', NODECG_BUNDLE, { defaultValue: {} });
 
   router.get('/start', (req, res) => {
-    const key = req.query.key;
+    const key = req.query.key?.toLowerCase();
+
+    if (!key) {
+      res.status(400).send('No key specified');
+      log(`Timer start request ignored: no runner key specified.`);
+
+      return;
+    }
 
     const runner = runnerData.value[key] ?? RUN_DATA_TEMPLATE;
 
@@ -43,7 +50,14 @@ module.exports = nodecg => {
 
   
   router.get('/stop', (req, res) => {
-    const key = req.query.key;
+    const key = req.query.key?.toLowerCase();
+
+    if (!key) {
+      res.status(400).send('No key specified');
+      log(`Timer stop request ignored: no runner key specified.`);
+
+      return;
+    }
 
     const runner = runnerData.value[key];
 

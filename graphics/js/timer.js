@@ -20,7 +20,7 @@ function formatSeconds(seconds) {
 	// The bundle name where all the run information is pulled from.
 	const BUNDLE = 'nodecg-multiblitz';
 	
-  const playerKey = window.location.hash.replace('#', '');
+  const playerKey = window.location.hash.replace('#', '').toLowerCase();
 	
 	var runnerData = nodecg.Replicant('runnerData', BUNDLE);
 	
@@ -31,7 +31,6 @@ function formatSeconds(seconds) {
     const cumulativeElem = document.querySelector('#cumulative');
     const playerData = runnerData.value[playerKey];
 
-    
     if (!playerData) return;
 
     const lastSegment = playerData.segments[playerData.segments.length - 1];
@@ -43,7 +42,6 @@ function formatSeconds(seconds) {
     const isRunning = playerData.isRunning
 
     if (timerElem) {
-
       timerElem.textContent = formatSeconds(currentRunSeconds);
 
       if (isRunning) {
