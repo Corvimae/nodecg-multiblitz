@@ -4,6 +4,7 @@ const RUN_DATA_TEMPLATE = {
   segments: [],
   isRunning: false,
   currentRunStart: null,
+  hidden: false,
 };
 
 function log(message) {
@@ -30,6 +31,7 @@ module.exports = nodecg => {
 
     runner.isRunning = true;
     runner.currentRunStart = Number(req.query.time);
+    runner.hidden = false;
 
     runnerData.value = {
       ...runnerData.value,

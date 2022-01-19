@@ -77,11 +77,12 @@ NodeCG.waitForReplicants(runnerData).then(() => {
     clearButton.setAttribute('raised', true);
     clearButton.innerHTML = '&times';
     clearButton.onclick = () => {
-      runnerData.value = Object.entries(runnerData.value).reduce((acc, [prevKey, prevValue]) => {
-        if (prevKey === key) return acc;
-
-        return { ...acc, [prevKey]: prevValue };
-      }, {});
+      runnerData.value[key] = {
+        segments: [],
+        isRunning: false,
+        currentRunStart: null,
+        hidden: true,
+      }
       
       container.remove();
     };
@@ -101,6 +102,9 @@ NodeCG.waitForReplicants(runnerData).then(() => {
 
     keys.forEach(key => {
       const data = newValue[key];
+
+      if (data.hidden) return;
+
       let container = document.querySelector(`.runner-table #${key}`);
 
       if (!container) {
