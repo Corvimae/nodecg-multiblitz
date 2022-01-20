@@ -1,3 +1,5 @@
+const { OBSUtility } = require('nodecg-utility-obs');
+
 const NODECG_BUNDLE = 'nodecg-multiblitz';
 
 const RUN_DATA_TEMPLATE = {
@@ -62,6 +64,77 @@ module.exports = nodecg => {
     }
   }
 
+  const obsWebsocketOptions = nodecg.bundleConfig?.obsWebsocketOptions;
+  const autoSceneEnabled = nodecg.bundleConfig?.enableAutoScene ?? false;
+  const autoSceneCheckPeriod = nodecg.bundleConfig?.autoSceneCheckPeriod ?? 15000;
+  const autoSceneNames = nodecg.bundleConfig?.autoSceneNames ?? [];
+  const autoSceneOverrideNames = nodecg.bundleConfig?.autoSceneOverrideNames ?? [];
+
+  if (autoSceneEnabled) {
+    const obs = new OBSUtility(nodecg);
+    
+    if (obsWebsocketOptions) {
+      obs.connect(obsWebsocketOptions)
+        .then(() => {
+          log('Connected to OBS websocket.');
+
+          if (autoSceneNames.length > 0) {
+            log('Auto-scene enabled.');
+
+            setInterval(() => {
+              log('[Auto-scene] Attempting to determine the expected active scene...');
+
+              const activeRunners = Object.values(runnerData.value).filter(({ isAFK }) => !isAFK);
+
+              if (activeRunners.length > 0) {
+                const sceneName = autoSceneNames[activeRunners.length] ?? autoSceneNames[autoSceneNames.length - 1];
+
+                obs.send('GetCurrentScene')
+                  .then(response => {
+                    if(response.name === sceneName) {
+                      log(`[Auto-scene] There are ${activeRunners.length} active runner(s), and the current scene (${response.name}) matches that count; the scene will not be changed.`);
+                      return;
+                    }
+
+                    if (autoSceneOverrideNames.indexOf(response.name) !== -1) {
+                      log(`[Auto-scene] There are ${activeRunners.length} active runner(s), but the active scene (${response.name}) is in the override list; the scene will not be changed.`);
+
+                      return;
+                    }
+
+                    log(`[Auto-scene] There are ${activeRunners.length} active runner(s) - setting the active scene to ${sceneName}.`);
+
+                    obs.send('SetCurrentScene', { 
+                      'scene-name': sceneName,
+                    }).then(() => {
+                      log(`[Auto-scene] Successfully set the active scene to ${sceneName}.`);
+                    }).catch(err => {
+                      local (`[Auto-scene] Unable to set the active scene.`);
+                      console.error(err);
+                    });
+                  }).catch(err => {
+                    error(`[Auto-scene] Unable to determine the active scene, skipping scene transition.`);
+                    console.error(err);
+                  });
+
+      
+              } else {
+                log('[Auto-scene] There are no active runners, so the scene will not be changed.');
+              }
+            }, autoSceneCheckPeriod);
+          } else {
+            error('Could not enable auto-scene: autoSceneNames must have at least one value.');
+          }
+        })
+        .catch(err => {
+          error(`Could not connect to OBS websocket: ${err}. Auto-scene will not be enabled.`);
+          console.error(err);
+          return;
+        })
+    } else {
+      error('Could not enable OBS websocket connection: obsWebsocketOptions config option must be defined.');
+    }
+  }
   router.get('/start', (req, res) => {
     const key = req.query.key?.toLowerCase();
 

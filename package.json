@@ -10,6 +10,9 @@
   "bugs": {
     "url": "https://github.com/Corvimae/nodecg-multiblitz/issues"
   },
+  "dependencies": {
+    "nodecg-utility-obs": "^6.1.7"
+  },
   "homepage": "https://github.com/Corvimae/nodecg-multiblitz#readme",
   "nodecg": {
     "compatibleRange": "^1.5.0",

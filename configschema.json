@@ -2,9 +2,69 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "enableAutoAFK": {"type": "boolean", "default": true, "description": "Automatically marks runners as AFK if they are not active for a specified amount of time."},
-    "autoAFKDuration": {"type": "number", "default": 300000, "description": "The amount of milliseconds before a runner is automatically marked as AFK."},
-    "autoAFKCheckPeriod": {"type": "number", "default": 30000, "description": "How frequently to check for AFKs (in milliseconds)."},
-    "quiet": {"type": "boolean", "default": false, "description": "Suppress multiblitz console output."}
-  }
+    "enableAutoAFK": {
+      "type": "boolean",
+      "default": true,
+      "description": "Automatically marks runners as AFK if they are not active for a specified amount of time."
+    },
+    "autoAFKDuration": {
+      "type": "number",
+      "default": 300000,
+      "description": "The amount of milliseconds before a runner is automatically marked as AFK."
+    },
+    "autoAFKCheckPeriod": {
+      "type": "number",
+      "default": 30000,
+      "description": "How frequently to check for AFKs (in milliseconds)."
+    },
+    "obsWebsocketOptions": {
+      "type": "object",
+      "properties": {
+        "address": { 
+          "type": "string",
+          "default": "localhost:4444"
+        },
+        "password": {
+          "type": "string",
+          "default": ""
+        },
+        "secure": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "description": "Connection details for the OBS websocket"
+    },
+    "enableAutoScene": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically switches scenes depending on the number of active runners. Requires obs-websocket."
+    },
+    "autoSceneCheckPeriod": {
+      "type": "number",
+      "default": 15000,
+      "description": "How frequently to attempt to automatically set the active scene."
+    },
+    "autoSceneNames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "The scenes to set as active depending on the number of active runners. This list should be sequential, 1-indexed: the first value is the scene name for one active runner, the second value is the scene name for two active runners, and so forth. The last value is used for any number of active runners equal to or greater than that index."
+    },
+    "autoSceneOverrideNames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "A list of scene names that auto-scene will never change from."
+    },
+    "quiet": {
+      "type": "boolean",
+      "default": false,
+      "description": "Suppress multiblitz console output."
+    }
+}
 }
