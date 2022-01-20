@@ -26,6 +26,16 @@ function setStateClass(element, className, value) {
   }
 }
 
+function createButton(text, className, onClick) {
+  const button = document.createElement('button');
+  
+  button.classList.add('button', className);
+  button.setAttribute('raised', true);
+  button.innerHTML = text;
+  button.onclick = onClick;
+
+  return button;
+}
 
 NodeCG.waitForReplicants(runnerData).then(() => {
   setInterval(() => {
@@ -42,6 +52,9 @@ NodeCG.waitForReplicants(runnerData).then(() => {
       
       setStateClass(runnerCell, 'is-running', isRunning);
       setStateClass(runnerCell, 'is-afk', isAFK);
+
+      runnerCell.querySelector('.end-timer-button').disabled = !isRunning;
+      runnerCell.querySelector('.resume-timer-button').disabled = isRunning;
 
       let cumulativeRuntime = Number(runnerCell.getAttribute('data-cumulative-seconds'));
 
@@ -84,12 +97,7 @@ NodeCG.waitForReplicants(runnerData).then(() => {
   
     actionsCell.classList.add('runner-actions');
   
-    const clearButton = document.createElement('button');
-  
-    clearButton.classList.add('clear-runner-button');
-    clearButton.setAttribute('raised', true);
-    clearButton.innerHTML = '&times';
-    clearButton.onclick = () => {
+    const clearButton = createButton('&times', 'clear-runner-button', () => {
       runnerData.value[key] = {
         segments: [],
         isRunning: false,
@@ -98,8 +106,39 @@ NodeCG.waitForReplicants(runnerData).then(() => {
       }
       
       container.remove();
-    };
+    });
+
+    const endTimerButton = createButton('&#x2714;', 'end-timer-button', () => {
+      runnerData.value[key] = {
+        ...runnerData.value[key],
+        segments: [
+          ...runnerData.value[key].segments,
+          {
+            start: runnerData.value[key].currentRunStart,
+            end: new Date().getTime(),
+          },
+        ],
+        isRunning: false,
+        currentRunStart: null,
+      };
+    });
   
+
+    const resumeTimerButton = createButton('&#x25C0;', 'resume-timer-button', () => {
+      const lastSegment = runnerData.value[key].segments[runnerData.value[key].segments.length - 1];
+
+      if (!lastSegment) return;
+
+      runnerData.value[key] = {
+        ...runnerData.value[key],
+        segments: runnerData.value[key].segments.slice(0, -1),
+        isRunning: true,
+        currentRunStart: lastSegment.start
+      };
+    });
+  
+    actionsCell.append(endTimerButton);
+    actionsCell.append(resumeTimerButton);
     actionsCell.append(clearButton);
   
     container.appendChild(keyCell);

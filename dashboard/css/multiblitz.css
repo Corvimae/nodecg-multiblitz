@@ -1,6 +1,6 @@
 .runner-table {
   display: grid;
-  grid-template-columns: max-content 1fr 1fr max-content;
+  grid-template-columns: repeat(3, max-content) 1fr;
 }
 
 .runner {
@@ -13,7 +13,9 @@
   padding: 0.25rem 0.5rem;
 }
 
-.clear-runner-button {
+.button {
+  height: 32px;
+  width: 44px;
   border: none;
   color: #fff;
   background-color: #272727;
@@ -28,17 +30,48 @@
   cursor: pointer;
 }
 
+.button:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: default;
+}
 
-.clear-runner-button:hover {
+.button:hover:not(:disabled) {
   background-color: #383838;
+}
+
+.button + .button {
+  margin-left: 4px;
+}
+
+.end-timer-button {
+  background-color: rgb(56, 142, 60);
+}
+
+.end-timer-button:hover:not(:disabled) {
+  background-color: rgb(90, 201, 96);
+}
+
+.clear-runner-button {
+  background-color: rgb(122, 18, 18);
+}
+
+.clear-runner-button:hover:not(:disabled) {
+  background-color: rgb(168, 44, 44);
 }
 
 .runner .current-run-timer {
   opacity: 0.5;
 }
 
-.runner.is-running .current-run-timer{
+.runner.is-running .current-run-timer {
   opacity: 1.0;
+}
+
+.runner .runner-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .runner .runner-afk-text {
