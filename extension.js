@@ -109,15 +109,11 @@ module.exports = nodecg => {
                     }).then(() => {
                       log(`[Auto-scene] Successfully set the active scene to ${sceneName}.`);
                     }).catch(err => {
-                      local (`[Auto-scene] Unable to set the active scene.`);
-                      console.error(err);
+                      error(`[Auto-scene] Unable to set the active scene: ${err.error}.`);
                     });
                   }).catch(err => {
-                    error(`[Auto-scene] Unable to determine the active scene, skipping scene transition.`);
-                    console.error(err);
-                  });
-
-      
+                    error(`[Auto-scene] Unable to determine the active scene, skipping scene transition: ${err.error}.`);
+                  });      
               } else {
                 log('[Auto-scene] There are no active runners, so the scene will not be changed.');
               }
@@ -127,14 +123,13 @@ module.exports = nodecg => {
           }
         })
         .catch(err => {
-          error(`Could not connect to OBS websocket: ${err}. Auto-scene will not be enabled.`);
-          console.error(err);
-          return;
-        })
+          error(`Could not connect to OBS websocket: ${err.error}. Auto-scene will not be enabled.`);
+        });
     } else {
       error('Could not enable OBS websocket connection: obsWebsocketOptions config option must be defined.');
     }
   }
+  
   router.get('/start', (req, res) => {
     const key = req.query.key?.toLowerCase();
 
