@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "enableAutoAFK": {"type": "boolean", "default": true, "description": "Automatically marks runners as AFK if they are not active for a specified amount of time."},
+    "autoAFKDuration": {"type": "number", "default": 300000, "description": "The amount of milliseconds before a runner is automatically marked as AFK."},
+    "autoAFKCheckPeriod": {"type": "number", "default": 30000, "description": "How frequently to check for AFKs (in milliseconds)."},
+    "quiet": {"type": "boolean", "default": false, "description": "Suppress multiblitz console output."}
+  }
+}

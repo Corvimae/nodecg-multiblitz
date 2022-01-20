@@ -1,5 +1,3 @@
-const path = require('path');
-
 const NODECG_BUNDLE = 'nodecg-multiblitz';
 
 const RUN_DATA_TEMPLATE = {
@@ -10,13 +8,59 @@ const RUN_DATA_TEMPLATE = {
   isAFK: false,
 };
 
-function log(message) {
-  console.info(`[${NODECG_BUNDLE}] ${message.toString()}`);
+function timeToSeconds(startTime, endTime = null) {
+  return ((endTime || new Date().getTime()) - startTime) / 1000;
 }
 
 module.exports = nodecg => {
+  function log(message, force = false, method = console.info) {
+    if (force || !nodecg.bundleConfig?.quiet) {
+      method(`[${NODECG_BUNDLE}] ${message.toString()}`);
+    }
+  }
+
+  function error(message) {
+    log(message, true, console.error);
+  }
+
+  log('Multiblitz enabled B)');
+
+  
   const router = nodecg.Router();
   const runnerData = nodecg.Replicant('runnerData', NODECG_BUNDLE, { defaultValue: {} });
+
+  const autoAFKEnabled = nodecg.bundleConfig?.enableAutoAFK ?? false;
+  const autoAFKCheckPeriod = nodecg.bundleConfig?.autoAFKCheckPeriod ?? 30000;
+  const autoAFKDuration = nodecg.bundleConfig?.autoAFKCheckPeriod;
+
+  if (autoAFKEnabled) {
+    if (autoAFKDuration) {
+      log('Auto AFK enabled.');
+
+      setInterval(() => {
+        log('Checking for runner AFKs...');
+        Object.entries(runnerData.value).forEach(([key, data]) => {
+          if (!data.isAFK && !data.isRunning) {
+            const lastRun = data.segments[data.segments.length - 1];
+
+            if (lastRun) {
+              const msSinceLastRun = timeToSeconds(lastRun.end) * 1000;
+
+              if (msSinceLastRun >= autoAFKDuration) {
+                data.isAFK = true;
+
+                runnerData[key] = data;
+
+                log(`Marked ${key} as AFK.`);
+              }
+            }
+          }
+        });
+      }, autoAFKCheckPeriod);
+    } else {
+      error('Could not enable auto AFK: autoAFKDuration config option must be defined.');
+    }
+  }
 
   router.get('/start', (req, res) => {
     const key = req.query.key?.toLowerCase();
@@ -43,6 +87,7 @@ module.exports = nodecg => {
     log(`Timer started by ${key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'})`);
 
     runner.isRunning = true;
+    runner.isAFK = false;
     runner.currentRunStart = Number(req.query.time);
     runner.hidden = false;
 

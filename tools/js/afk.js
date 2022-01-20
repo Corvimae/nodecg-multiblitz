@@ -19,7 +19,6 @@
       statusElement.innerHTML = `You are <b>${value ? '' : 'not '}AFK</b>.`;
     }
   }
-  
 
   function fetchAndShowError(url, successCallback, errorCallback = null, formatAsJson = true) {
     fetch(url).then(response => {
