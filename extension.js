@@ -87,7 +87,7 @@ module.exports = nodecg => {
               const activeRunners = Object.values(runnerData.value).filter(({ isAFK }) => !isAFK);
 
               if (activeRunners.length > 0) {
-                const sceneName = autoSceneNames[activeRunners.length] ?? autoSceneNames[autoSceneNames.length - 1];
+                const sceneName = autoSceneNames[activeRunners.length + 1] ?? autoSceneNames[autoSceneNames.length - 1];
 
                 obs.send('GetCurrentScene')
                   .then(response => {
