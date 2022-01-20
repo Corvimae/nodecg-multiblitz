@@ -2,6 +2,8 @@
 
 Tracks multiple timers and cumulative run attempt time for use in a nodecg overlay and provides a dashboard widget for event organizers.
 
+For the associated Livesplit plugin, go here: [https://github.com/Corvimae/Livesplit.Multiblitz](https://github.com/Corvimae/Livesplit.Multiblitz).
+
 ## Installation
 
 From your nodecg directory:
