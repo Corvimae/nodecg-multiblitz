@@ -18,6 +18,14 @@ function formatSeconds(seconds) {
   ].join(':');
 }
 
+function setStateClass(element, className, value) {
+  if (value) {
+    element.classList.add(className);
+  } else {
+    element.classList.remove(className);
+  }
+}
+
 
 NodeCG.waitForReplicants(runnerData).then(() => {
   setInterval(() => {
@@ -26,16 +34,14 @@ NodeCG.waitForReplicants(runnerData).then(() => {
       const rawEndTime = runnerCell.getAttribute('data-end-time');
       const endTime = rawEndTime ? Number(rawEndTime) : null;
       const isRunning = runnerCell.getAttribute('data-is-running') === 'true';
+      const isAFK = runnerCell.getAttribute('data-is-afk') === 'true';
 
       const currentRunSeconds = timeToSeconds(startTime, endTime);
 
       runnerCell.querySelector('.current-run-timer').textContent = formatSeconds(currentRunSeconds);
       
-      if (isRunning) {
-        runnerCell.classList.add('is-running');
-      } else {
-        runnerCell.classList.remove('is-running');
-      }
+      setStateClass(runnerCell, 'is-running', isRunning);
+      setStateClass(runnerCell, 'is-afk', isAFK);
 
       let cumulativeRuntime = Number(runnerCell.getAttribute('data-cumulative-seconds'));
 
@@ -56,6 +62,13 @@ NodeCG.waitForReplicants(runnerData).then(() => {
     
     keyCell.classList.add('runner-key');
     keyCell.textContent = key;
+
+    const afkTextCell = document.createElement('span');
+    afkTextCell.classList.add('runner-afk-text');
+
+    afkTextCell.textContent = ' (AFK)';
+
+    keyCell.appendChild(afkTextCell);
   
     const timerCell = document.createElement('div');
     
@@ -115,6 +128,7 @@ NodeCG.waitForReplicants(runnerData).then(() => {
 
       container.setAttribute('data-start-time', data.currentRunStart);
       container.setAttribute('data-is-running', data.isRunning);
+      container.setAttribute('data-is-afk', data.isAFK);
 
       const cumulativeSeconds = data.segments.reduce((acc, { start, end }) => (
         acc + timeToSeconds(start, end)

@@ -3,8 +3,7 @@
 
 <head>
 	<meta charset="UTF-8">
-	<link rel="stylesheet" href="css/multiblitz.css" />
-	<script src="./js/multiblitz.js"></script>
+	<link rel="stylesheet" href="css/afk.css" />
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
@@ -13,8 +12,15 @@
 
 <body>
 	<div id="main">
-    <div class="runner-table"></div>
+		Key: <input type="text" class="runner-key" id="runner-key" autocomplete="off" />
+    <button id="afk-toggle" class="afk-toggle" disabled>
+			Go AFK
+		</button>
+		<h1 id="status" class="status"></h1>
+		<div id="error-card" class="error-card"></div>
 	</div>
+
+	<script src="./js/afk.js"></script>
 </body>
 
 </html>

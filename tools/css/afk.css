@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
+body {
+  font-family: Overpass, Verdana, Geneva, Tahoma, sans-serif
+}
+
+.error-card {
+  font-size: 1.25rem;
+  color: #D03C3C;
+  background-color: #FBE4E4;
+  border: 1px solid #D03C3C;
+  padding: 0.5rem 1rem;
+}
+
+.error-card:empty {
+  display: none;
+}

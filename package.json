@@ -35,6 +35,12 @@
         "file": "multiblitz.html",
         "width": 3
       }
+    ],
+    "mount": [
+      {
+        "directory": "tools",
+        "endpoint": "tools"
+      }
     ]
   }
 }
