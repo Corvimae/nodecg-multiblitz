@@ -30,6 +30,7 @@ module.exports = nodecg => {
   
   const router = nodecg.Router();
   const runnerData = nodecg.Replicant('runnerData', NODECG_BUNDLE, { defaultValue: {} });
+  const autoSceneActiveVLCSources = nodecg.Replicant('autoSceneActiveVLCSources', NODECG_BUNDLE, { defaultValue: {} });
 
   const autoAFKEnabled = nodecg.bundleConfig?.enableAutoAFK ?? false;
   const autoAFKCheckPeriod = nodecg.bundleConfig?.autoAFKCheckPeriod ?? 30000;
@@ -103,6 +104,28 @@ module.exports = nodecg => {
 
                     Promise.all(getSettingsPromises)
                       .then(responses => {
+                        const streamToKey = Object.entries(autoSceneStreamMapping).reduce((acc, [key, value]) => ({
+                          ...acc,
+                          [value]: key
+                        }), {});
+
+                        function updateActiveVLCSources(obsResponse) {
+                          autoSceneActiveVLCSources.value = obsResponse.reduce((acc, { sourceName, sourceSettings }) => {
+                            const streamsForSource = sourceSettings.playlist.map(({ value }) => value);
+                            const activeStream = streamsForSource.find(item => Object.keys(streamToKey).indexOf(item) !== -1);
+  
+                            if (!activeStream) return acc;
+  
+                            return {
+                              ...acc,
+                              [streamToKey[activeStream]]: sourceName,
+                            };
+                          }, autoSceneActiveVLCSources.value);
+                        }
+
+                        updateActiveVLCSources(responses);
+
+
                         const expectedStreams = activeRunners.map(({ key }) => {
                           const streamURL = autoSceneStreamMapping[key];
                           
@@ -143,6 +166,8 @@ module.exports = nodecg => {
                             Promise.all(setSettingsPromises)
                               .then(responses => {
                                 log(`[Auto-scene] Successfully updated the settings of: ${responses.map(({ sourceName }) => sourceName).join(', ')}.`);
+
+                                updateActiveVLCSources(responses);
                               })
                               .catch(err => {
                                 error(`[Auto-scene] Unable to update VLC source settings: ${err.error}.`);
@@ -155,11 +180,13 @@ module.exports = nodecg => {
                         }
                       })
                       .catch(err => {
+                        console.log(err);
+
                         error(`[Auto-scene] Unable to fetch VLC source settings: ${err.error}.`);
                       });
                   });
                 }
-                
+
                 obs.send('GetCurrentScene')
                   .then(response => {
                     if(response.name === sceneName) {
