@@ -61,6 +61,19 @@
       "default": [],
       "description": "A list of scene names that auto-scene will never change from."
     },
+    "autoSceneSourceNames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "A list of VLC video sources in which to display the live streams."
+    },
+    "autoSceneStreamMapping": {
+      "type": "object",
+      "default":  {},
+      "description": "A mapping of runner key to their associated stream URL. You can get the stream URLs using this site: https://pwn.sh/tools/getstream.html"
+    },
     "quiet": {
       "type": "boolean",
       "default": false,

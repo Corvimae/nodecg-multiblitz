@@ -69,6 +69,8 @@ module.exports = nodecg => {
   const autoSceneCheckPeriod = nodecg.bundleConfig?.autoSceneCheckPeriod ?? 15000;
   const autoSceneNames = nodecg.bundleConfig?.autoSceneNames ?? [];
   const autoSceneOverrideNames = nodecg.bundleConfig?.autoSceneOverrideNames ?? [];
+  const autoSceneSourceNames = nodecg.bundleConfig?.autoSceneSourceNames ?? [];
+  const autoSceneStreamMapping = nodecg.bundleConfig?.autoSceneStreamMapping ?? [];
 
   if (autoSceneEnabled) {
     const obs = new OBSUtility(nodecg);
@@ -84,11 +86,80 @@ module.exports = nodecg => {
             setInterval(() => {
               log('[Auto-scene] Attempting to determine the expected active scene...');
 
-              const activeRunners = Object.values(runnerData.value).filter(({ isAFK }) => !isAFK);
+              const activeRunners = Object.entries(runnerData.value)
+                .filter(([_key, { isAFK, hidden }]) => !isAFK && !hidden)
+                .map(([key, runnerData]) => ({ ...runnerData, key }));
 
               if (activeRunners.length > 0) {
                 const sceneName = autoSceneNames[activeRunners.length - 1] ?? autoSceneNames[autoSceneNames.length - 1];
 
+                if (autoSceneSourceNames.length > 0) {
+                  obs.send('GetSceneItemList').then(response => {
+                    const vlcSources = response.sceneItems.filter(({ sourceKind, sourceName }) => sourceKind === 'vlc_source' && autoSceneSourceNames.indexOf(sourceName) !== -1);
+
+                    log(`[Auto-scene] Found ${vlcSources.length} matching VLC sources(s).`);
+                    
+                    const getSettingsPromises = vlcSources.map(({ sourceName }) => obs.send('GetSourceSettings', { sourceName, sourceType: 'vlc_source' }))
+
+                    Promise.all(getSettingsPromises)
+                      .then(responses => {
+                        const expectedStreams = activeRunners.map(({ key }) => {
+                          const streamURL = autoSceneStreamMapping[key];
+                          
+                          if (!streamURL) log(`[Auto-scene] WARNING: Runner with key ${key} is active, but does not have a stream URL mapped in autoSceneStreamMapping!`);
+
+                          return streamURL;
+                        }).filter(item => item !== undefined);
+
+                        const activeStreams = responses.reduce((acc, { sourceSettings }) => [
+                          ...acc, 
+                          ...(sourceSettings.playlist || []).map(({ value }) => value)
+                        ], []);
+
+                        const pendingStreams = expectedStreams.filter(item => activeStreams.indexOf(item) === -1);
+
+                        const inactiveSources = responses.filter(({ sourceSettings }) => (sourceSettings.playlist || []).map(({ value }) => value).indexOf(activeStreams) === -1);
+
+                        if (pendingStreams.length > 0) {
+                          if (inactiveSources.length > 0) {
+                          log(`[Auto-scene] WARNING: There are ${pendingStreams.length} active stream(s) that are not currently shown, but no inactive VLC sources.`);
+                            
+                            const setSettingsPromises = inactiveSources.slice(0, pendingStreams.length).map(({ sourceName }, index) => (
+                              obs.send('SetSourceSettings', { 
+                                sourceName, 
+                                sourceType: 'vlc_source', 
+                                sourceSettings: {
+                                  playlist: [
+                                    {
+                                      hidden: false,
+                                      selected: true,
+                                      value: pendingStreams[index],
+                                    }
+                                  ],
+                                },
+                              })
+                            ));
+                            
+                            Promise.all(setSettingsPromises)
+                              .then(responses => {
+                                log(`[Auto-scene] Successfully updated the settings of: ${responses.map(({ sourceName }) => sourceName).join(', ')}.`);
+                              })
+                              .catch(err => {
+                                error(`[Auto-scene] Unable to update VLC source settings: ${err.error}.`);
+                              });
+                          } else {
+                            log(`[Auto-scene] There are ${pendingStreams.length} active stream(s) that are not currently shown, and ${inactiveSources.length} inactive VLC source(s) - attempting to update source settings.`);
+                          }
+                        } else {
+                          log(`[Auto-scene] All active streams are currently being shown; no action will be taken.`);
+                        }
+                      })
+                      .catch(err => {
+                        error(`[Auto-scene] Unable to fetch VLC source settings: ${err.error}.`);
+                      });
+                  });
+                }
+                
                 obs.send('GetCurrentScene')
                   .then(response => {
                     if(response.name === sceneName) {
@@ -123,7 +194,8 @@ module.exports = nodecg => {
           }
         })
         .catch(err => {
-          error(`Could not connect to OBS websocket: ${err.error}. Auto-scene will not be enabled.`);
+          console.log(err);
+          error(`Could not connect to OBS websocket: ${err.error} Auto-scene will not be enabled.`);
         });
     } else {
       error('Could not enable OBS websocket connection: obsWebsocketOptions config option must be defined.');
