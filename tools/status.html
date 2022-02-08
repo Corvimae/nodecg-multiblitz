@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="css/status.css" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+	</script>
+</head>
+
+<body>
+	<div id="main">
+		<label for="runner-key">Key:</label>
+		<input type="text" class="runner-key" id="runner-key" autocomplete="off" />
+    <button id="afk-toggle" class="afk-toggle" disabled>
+			Go AFK
+		</button>
+		<h1 id="status" class="status"></h1>
+		<div id="error-card" class="error-card"></div>
+		<div class="runner-data">
+			<div class="runner-input-row">
+				<label for="runner-name">Runner name:</label>
+				<input type="text" class="runner-name" id="runner-name" autocomplete="off" />
+			</div>
+			<div class="runner-input-row">
+				<label for="runner-pronouns">Runner pronouns:</label>
+				<input type="text" class="runner-pronouns" id="runner-pronouns" autocomplete="off" />
+			</div>
+			<div class="runner-input-row">
+				<div></div>
+				<button id="update-runner-data" disabled>
+					Update runner data
+				</button>
+			</div>
+		</div>
+		<h2 id="profile-status" class="status"></h1>
+	</div>
+
+	<script src="./js/status.js"></script>
+</body>
+
+</html>

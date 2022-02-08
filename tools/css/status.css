@@ -14,3 +14,23 @@ body {
 .error-card:empty {
   display: none;
 }
+
+.runner-data {
+  display: grid;
+  grid-template-columns: max-content 12rem;
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #ccc;
+}
+
+.runner-input-row {
+  display: contents;
+}
+
+.runner-input-row + .runner-input-row > *{
+  margin-top: 0.5rem;
+}
+.runner-data label {
+  margin-right: 0.5rem;
+  text-align: right;
+}

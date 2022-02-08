@@ -27,7 +27,6 @@ module.exports = nodecg => {
 
   log('Multiblitz enabled B)');
 
-  
   const router = nodecg.Router();
   const runnerData = nodecg.Replicant('runnerData', NODECG_BUNDLE, { defaultValue: {} });
   const autoSceneActiveVLCSources = nodecg.Replicant('autoSceneActiveVLCSources', NODECG_BUNDLE, { defaultValue: {} });
@@ -228,7 +227,7 @@ module.exports = nodecg => {
       error('Could not enable OBS websocket connection: obsWebsocketOptions config option must be defined.');
     }
   }
-  
+    
   router.get('/start', (req, res) => {
     const key = req.query.key?.toLowerCase();
 
@@ -368,6 +367,37 @@ module.exports = nodecg => {
     res.send(`Marked self as ${requestedStatus ? '' : 'no longer '}AFK`);
   });
 
+  router.post('/runnerProfile', (req, res) => {
+    const key = req.query.key?.toLowerCase();
+
+    if (!key) {
+      res.status(400).send('No key specified');
+      log(`Runner profile update request ignored: no runner key specified.`);
+
+      return;
+    }
+    
+    const runner = runnerData.value[key];
+
+    if (!runner) {
+      res.status(400).send('Runner key is not registered.');
+      log(`Runner profile update request ignored: ${key ?? '<undefined user>'} is not registered as a runner.`);
+
+      return;
+    }
+        
+    runnerData.value = {
+      ...runnerData.value,
+      [key]: {
+        ...runner,
+        runnerName: req.body.name,
+        runnerPronouns: req.body.pronouns,
+      },
+    };
+
+    res.send(`Updated runner profile.`);
+  });
+
   router.get('/status', (req, res) => {
     const key = req.query.key?.toLowerCase();
 
@@ -386,8 +416,8 @@ module.exports = nodecg => {
     }
   });
 
-  router.get('/tools/afk', (req, res) => {
-    res.redirect('/bundles/nodecg-multiblitz/tools/afk.html');
+  router.get('/tools/status', (req, res) => {
+    res.redirect('/bundles/nodecg-multiblitz/tools/status.html');
   });
 
   nodecg.mount('/multiblitz', router);
