@@ -2,16 +2,19 @@ const NODECG_BUNDLE = 'nodecg-multiblitz';
 
 const runnerData = nodecg.Replicant('runnerData', NODECG_BUNDLE);
 
-function timeToSeconds(startTime, endTime = null) {
-  return ((endTime ?? new Date().getTime()) - startTime) / 1000;
+function timeToSeconds(startTime, endTime = null, offset = 0) {
+  const runtime = ((endTime ?? new Date().getTime()) - startTime) / 1000;
+
+  return Math.max(0, runtime + (offset / 1000));
 }
 
 function formatSeconds(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor(seconds / 60) - (hours * 60);
-  const remainingSeconds = Math.floor(seconds - (hours * 3600) - (minutes * 60));
+  const absSeconds = Math.abs(seconds);
+  const hours = Math.floor(absSeconds / 3600);
+  const minutes = Math.floor(absSeconds / 60) - (hours * 60);
+  const remainingSeconds = Math.floor(absSeconds - (hours * 3600) - (minutes * 60));
 
-  return [
+  return (seconds <= -1 ? '-' : '') + [
     hours < 10 ? '0' + hours : hours,
     minutes < 10 ? '0' + minutes : minutes,
     remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds,
@@ -42,11 +45,12 @@ NodeCG.waitForReplicants(runnerData).then(() => {
     [...document.querySelectorAll(`.runner-table .runner`)].forEach(runnerCell => {
       const startTime = Number(runnerCell.getAttribute('data-start-time'));
       const rawEndTime = runnerCell.getAttribute('data-end-time');
+      const offset = Number(runnerCell.getAttribute('data-offset'));
       const endTime = rawEndTime ? Number(rawEndTime) : null;
       const isRunning = runnerCell.getAttribute('data-is-running') === 'true';
       const isAFK = runnerCell.getAttribute('data-is-afk') === 'true';
 
-      const currentRunSeconds = timeToSeconds(startTime, endTime);
+      const currentRunSeconds = timeToSeconds(startTime, endTime) + (offset / 1000);
 
       runnerCell.querySelector('.current-run-timer').textContent = formatSeconds(currentRunSeconds);
       
@@ -58,7 +62,7 @@ NodeCG.waitForReplicants(runnerData).then(() => {
 
       let cumulativeRuntime = Number(runnerCell.getAttribute('data-cumulative-seconds'));
 
-      if (isRunning) cumulativeRuntime += currentRunSeconds;
+      if (isRunning) cumulativeRuntime += Math.max(0, currentRunSeconds);
 
       runnerCell.querySelector('.cumulative-run-timer').textContent = formatSeconds(cumulativeRuntime);
     });
@@ -168,10 +172,12 @@ NodeCG.waitForReplicants(runnerData).then(() => {
       container.setAttribute('data-start-time', data.currentRunStart);
       container.setAttribute('data-is-running', data.isRunning);
       container.setAttribute('data-is-afk', data.isAFK);
+      container.setAttribute('data-offset', data.offset);
 
-      const cumulativeSeconds = data.segments.reduce((acc, { start, end }) => (
-        acc + timeToSeconds(start, end)
+      const cumulativeSeconds = data.segments.reduce((acc, { start, end, offset }) => (
+        acc + timeToSeconds(start, end, offset)
       ), 0);
+      console.log('recalc', cumulativeSeconds);
 
       container.setAttribute('data-cumulative-seconds', cumulativeSeconds);
 

@@ -1,20 +1,24 @@
 'use strict';
 
-function timeToSeconds(startTime, endTime = null) {
-  return ((endTime || new Date().getTime()) - startTime) / 1000;
+function timeToSeconds(startTime, endTime = null, offset = 0) {
+  const runtime = ((endTime ?? new Date().getTime()) - startTime) / 1000;
+
+  return Math.max(0, runtime + (offset / 1000));
 }
 
 function formatSeconds(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor(seconds / 60) - (hours * 60);
-  const remainingSeconds = Math.floor(seconds - (hours * 3600) - (minutes * 60));
+  const absSeconds = Math.abs(seconds);
+  const hours = Math.floor(absSeconds / 3600);
+  const minutes = Math.floor(absSeconds / 60) - (hours * 60);
+  const remainingSeconds = Math.floor(absSeconds - (hours * 3600) - (minutes * 60));
 
-  return [
+  return (seconds <= -1 ? '-' : '') + [
     hours < 10 ? '0' + hours : hours,
     minutes < 10 ? '0' + minutes : minutes,
     remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds,
   ].join(':');
 }
+
 
 (() => {
 	// The bundle name where all the run information is pulled from.
@@ -37,7 +41,7 @@ function formatSeconds(seconds) {
     const startTime = Number(playerData.currentRunStart || lastSegment.start);
     const endTime = !playerData.isRunning && lastSegment && lastSegment.end ? Number(lastSegment.end) : null;
 
-    const currentRunSeconds = timeToSeconds(startTime, endTime);
+    const currentRunSeconds = timeToSeconds(startTime, endTime) + (playerData.offset / 1000);
 
     const isRunning = playerData.isRunning
 
@@ -51,11 +55,11 @@ function formatSeconds(seconds) {
       }
     }
 
-    let cumulativeRuntime = playerData.segments.reduce((acc, { start, end }) => (
-      acc + timeToSeconds(start, end)
+    let cumulativeRuntime = playerData.segments.reduce((acc, { start, end, offset }) => (
+      acc + timeToSeconds(start, end, offset)
     ), 0);
 
-    if (isRunning) cumulativeRuntime += currentRunSeconds;
+    if (isRunning) cumulativeRuntime += Math.max(currentRunSeconds + (playerData.offset / 1000), 0);
 
     if (cumulativeElem) cumulativeElem.textContent = formatSeconds(cumulativeRuntime);
 	}

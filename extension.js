@@ -250,12 +250,13 @@ module.exports = nodecg => {
       return;
     }
 
-    log(`Timer started by ${key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'})`);
+    log(`Timer started by ${key ?? '<undefined user>'} (time: ${req.query.time ?? '<not specified>'}, offset: ${req.query.offset ?? 0})`);
 
     runner.isRunning = true;
     runner.isAFK = false;
     runner.currentRunStart = Number(req.query.time);
     runner.hidden = false;
+    runner.offset = Number(req.query.offset);
 
     runnerData.value = {
       ...runnerData.value,
@@ -296,10 +297,14 @@ module.exports = nodecg => {
 
     runner.isRunning = false;
     
-    runner.segments.push({
-      start: runner.currentRunStart,
-      end: Number(req.query.time),
-    });
+    runner.segments = [
+      ...runner.segments,
+      {
+        start: runner.currentRunStart,
+        end: Number(req.query.time),
+        offset: runner.offset,
+      },
+    ];
 
     runner.currentRunStart = null;
         
